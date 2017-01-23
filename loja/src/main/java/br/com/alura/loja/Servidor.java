@@ -22,4 +22,12 @@ public class Servidor {
 		
 		server.stop();
 	}
+	
+	public static HttpServer inicializaServidor() {
+		ResourceConfig config = new ResourceConfig().packages("br.com.alura.loja");
+		
+		URI uri = URI.create("http://localhost:8080/");
+		
+		return GrizzlyHttpServerFactory.createHttpServer(uri, config);
+	}
 }
