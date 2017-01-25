@@ -22,10 +22,14 @@ import junit.framework.Assert;
 public class ClienteTest {
 	
 	private HttpServer server;
+	private WebTarget target;
+	private Client client;
 	
 	@Before
 	public void iniciaServidor() {
 		server = Servidor.inicializaServidor();
+		client = ClientBuilder.newClient();
+		target = client.target("http://localhost:8080");
 	}
 	
 	@After
@@ -35,10 +39,6 @@ public class ClienteTest {
 
 	@Test
 	public void testQueBuscarUmCarrinhoTrazOCarrinhoEsperado() {
-		Client client = ClientBuilder.newClient();
-		
-		WebTarget target = client.target("http://localhost:8080");
-		
 		String conteudo = target.path("/carrinhos/1").request().get(String.class);
 		
 		Carrinho carrinho = (Carrinho) new XStream().fromXML(conteudo);
@@ -48,11 +48,6 @@ public class ClienteTest {
 	
 	@Test
 	public void testQueBuscarUmProjetoTrazOProjetoEsperado() {
-		
-		Client client = ClientBuilder.newClient();
-		
-		WebTarget target = client.target("http://localhost:8080");
-		
 		String conteudo = target.path("/projetos").request().get(String.class);
 		
 		Projeto projeto = (Projeto) new XStream().fromXML(conteudo);
@@ -61,11 +56,7 @@ public class ClienteTest {
 	}
 	
 	@Test
-	public void testCriarCarrinho() {
-		Client client = ClientBuilder.newClient();
-		
-        WebTarget target = client.target("http://localhost:8080");
-        
+	public void testQueSuportaNovosCarrinhos() {
         Carrinho carrinho = new Carrinho();
         carrinho.adiciona(new Produto(314L, "Tablet", 999, 1));
         carrinho.setRua("Rua Vergueiro");
@@ -75,6 +66,11 @@ public class ClienteTest {
         Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
 
         Response response = target.path("/carrinhos").request().post(entity);
-        Assert.assertEquals("<status>sucesso</status>", response.readEntity(String.class));
+        Assert.assertEquals(201, response.getStatus());
+        
+        String location = response.getHeaderString("Location");
+        String conteudo = client.target(location).request().get(String.class);
+        
+        Assert.assertTrue(conteudo.contains("Tablet"));
 	}
 }
