@@ -8,6 +8,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +30,11 @@ public class ClienteTest {
 	@Before
 	public void iniciaServidor() {
 		server = Servidor.inicializaServidor();
-		client = ClientBuilder.newClient();
+		
+		ClientConfig config = new ClientConfig();
+		config.register(new LoggingFilter());
+		
+		client = ClientBuilder.newClient(config);
 		target = client.target("http://localhost:8080");
 	}
 	
@@ -48,7 +54,7 @@ public class ClienteTest {
 	
 	@Test
 	public void testQueBuscarUmProjetoTrazOProjetoEsperado() {
-		String conteudo = target.path("/projetos").request().get(String.class);
+		String conteudo = target.path("/projetos/1").request().get(String.class);
 		
 		Projeto projeto = (Projeto) new XStream().fromXML(conteudo);
 		
